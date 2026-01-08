@@ -1,0 +1,70 @@
+/* Main Window Background */
+QMainWindow {
+    background-color: #1e1e1e;
+}
+
+/* Settings Column (Left) */
+#column-settings {
+    background-color: #2d2d30;
+    border: 2px solid #3e3e42;
+    border-radius: 8px;
+    padding: 15px;
+    margin: 5px;
+}
+
+/* Viewport Column (Middle - Main Display Area) */
+#column-viewport {
+    background-color: #252526;
+    border: 2px solid #3e3e42;
+    border-radius: 8px;
+    padding: 15px;
+    margin: 5px;
+}
+
+/* Commands Column (Right) */
+#column-commands {
+    background-color: #2d2d30;
+    border: 2px solid #3e3e42;
+    border-radius: 8px;
+    padding: 15px;
+    margin: 5px;
+}
+
+/* General Label Styling */
+QLabel {
+    color: #cccccc;
+    font-size: 14px;
+    font-family: "Segoe UI", Arial, sans-serif;
+}
+
+/* Button Styling (for when you add buttons) */
+QPushButton {
+    background-color: #0e639c;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    font-size: 13px;
+}
+
+QPushButton:hover {
+    background-color: #1177bb;
+}
+
+QPushButton:pressed {
+    background-color: #0d5689;
+}
+
+/* Input Field Styling (for when you add inputs) */
+QLineEdit, QTextEdit {
+    background-color: #3c3c3c;
+    color: #cccccc;
+    border: 1px solid #555555;
+    border-radius: 4px;
+    padding: 5px;
+    font-size: 13px;
+}
+
+QLineEdit:focus, QTextEdit:focus {
+    border: 1px solid #0e639c;
+}

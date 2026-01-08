@@ -1,0 +1,305 @@
+import sys
+from PyQt6.QtWidgets import (QApplication, QMainWindow, QLabel, QWidget,
+                             QHBoxLayout,QVBoxLayout,QTextEdit,QPushButton,
+                             QTabWidget, QSlider)  # Add QTabWidget
+from PyQt6.QtCore import Qt
+import pyqtgraph.opengl as gl
+import pyqtgraph as pg  # Add this for 2D plotting
+
+from radar import Radar
+import threading
+import time
+
+class RadarGUI(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("IWR1443 Radar Tester")
+        self.setGeometry(100,100,800,600)
+        
+        self.centralWidget = QWidget()
+        self.setCentralWidget(self.centralWidget)
+        self.mainLayout = QHBoxLayout(self.centralWidget)
+        
+        self.renderedSpheres = []
+
+        self.columnSettings = self.create_column_settings()
+        self.columnViewport = self.create_column_viewport()
+        self.columnCommands = self.create_column_commands()
+        
+        self.mainLayout.addWidget(self.columnSettings)
+        self.mainLayout.addWidget(self.columnViewport)
+        self.mainLayout.addWidget(self.columnCommands)
+
+        self.mainLayout.setStretch(0,1)
+        self.mainLayout.setStretch(1,2)
+        self.mainLayout.setStretch(2,1)
+
+        self.apply_styles()
+
+        self.fps = 5.0
+        self.radar = Radar("COM5","COM4")
+
+    def create_column_settings(self):
+        column = QWidget()
+        column.setObjectName("column-settings")
+        layout = QVBoxLayout(column)
+        
+        
+        uploadButton = QPushButton("Upload Configuration")
+        uploadButton.clicked.connect(self.upload_commands)
+        layout.addWidget(uploadButton)
+
+        stopButton = QPushButton("Stop Radar")
+        stopButton.clicked.connect(self.stop_radar)
+        layout.addWidget(stopButton)
+
+        return column
+
+    def upload_commands(self):
+        self.radar.send_cmd_file(cmdFile="testcommands.txt")
+        
+        self.radar.active = True
+        self.radar.storedData = []
+
+        # Create and start the thread
+        self.radarThread = threading.Thread(target=self.radar.run)
+        self.radarThread.start()
+
+        self.viewportThread = threading.Thread(target=self.update_viewport_radar)
+        self.viewportThread.start()
+
+    def update_viewport_radar(self):
+        frameInterval = (1.0 / self.fps) * 0.95
+        currentIdx = 0
+
+        while (self.radar.active and len(self.radar.storedData) == 0):
+            pass
+
+        totalFrames = len(self.radar.storedData)
+
+        while self.radar.active:
+            startTime = time.perf_counter()
+            newTotalFrames = len(self.radar.storedData)
+
+            if newTotalFrames > totalFrames:
+                currentIdx = totalFrames
+                totalFrames = newTotalFrames
+
+            if currentIdx < totalFrames:
+                print(f"Frame Number: {self.radar.storedData[currentIdx][3]}")
+                if self.radar.storedData[currentIdx][7] == None:
+                    points = None
+                else:
+                    points = [sublist[0] for sublist in self.radar.storedData[currentIdx][7]]
+                self.update_viewport(points=points, threshold=self.peakThreshold)
+                
+                elapsedTime = time.perf_counter() - startTime
+                sleepTime = frameInterval - elapsedTime
+                if sleepTime > 0:
+                    time.sleep(sleepTime)
+                
+                currentIdx += 1
+
+    def stop_radar(self):
+        self.radar.active = False
+        # Wait for the radar thread to finish
+        if hasattr(self, 'radarThread') and self.radarThread.is_alive():
+            self.radarThread.join()
+        if hasattr(self, 'viewportThread') and self.viewportThread.is_alive():
+            self.viewportThread.join()
+
+    def create_column_viewport(self):
+        column = QWidget()
+        column.setObjectName("column-viewport")
+        layout = QVBoxLayout(column)
+
+        # Create tab widget
+        self.tabWidget = QTabWidget()
+
+        # Create 3D view tab
+        tab3D = QWidget()
+        layout3D = QVBoxLayout(tab3D)
+
+        self.glView = gl.GLViewWidget()
+        self.glView.setMinimumSize(400, 400)
+        self.glView.setCameraPosition(distance=40, elevation=30, azimuth=45)
+
+        grid = gl.GLGridItem()
+        grid.scale(2, 2, 1)
+        self.glView.addItem(grid)
+
+        axis = gl.GLAxisItem()
+        axis.setSize(10, 10, 10)
+        self.glView.addItem(axis)
+
+        layout3D.addWidget(self.glView)
+
+        # Create 2D view tab
+        tab2D = QWidget()
+        layout2D = QVBoxLayout(tab2D)
+
+        self.plot2D = pg.PlotWidget()
+        self.plot2D.setMinimumSize(400, 400)
+        self.plot2D.setLabel('left', 'Y Position')
+        self.plot2D.setLabel('bottom', 'X Position')
+        self.plot2D.setTitle('2D Top-Down View (X-Y)')
+        self.plot2D.showGrid(x=True, y=True)
+        self.plot2D.setAspectLocked(True)  # Keep aspect ratio square
+
+        self.plot2D.setXRange(-4, 4, padding=0)
+        self.plot2D.setYRange(-1, 10, padding=0)
+        self.plot2D.disableAutoRange()  # Disable auto-ranging
+
+        # Create scatter plot item
+        self.scatter2D = pg.ScatterPlotItem(size=10, pen=pg.mkPen(None), brush=pg.mkBrush(255, 255, 255, 200))
+        self.plot2D.addItem(self.scatter2D)
+
+        layout2D.addWidget(self.plot2D)
+
+        # Add tabs to tab widget
+        self.tabWidget.addTab(tab3D, "3D View")
+        self.tabWidget.addTab(tab2D, "2D View (X-Y)")
+
+        layout.addWidget(self.tabWidget)
+
+        # Add threshold slider below tabs
+        sliderWidget = QWidget()
+        sliderLayout = QHBoxLayout(sliderWidget)
+
+        sliderLabel = QLabel("Peak Threshold:")
+        sliderLayout.addWidget(sliderLabel)
+
+        self.thresholdSlider = QSlider(Qt.Orientation.Horizontal)
+        self.thresholdSlider.setMinimum(0)
+        self.thresholdSlider.setMaximum(100)
+        self.peakThreshold = 30
+        self.thresholdSlider.setValue(self.peakThreshold)  # Default value
+        self.thresholdSlider.setTickPosition(QSlider.TickPosition.TicksBelow)
+        self.thresholdSlider.setTickInterval(10)
+        self.thresholdSlider.valueChanged.connect(self.on_threshold_changed)
+        sliderLayout.addWidget(self.thresholdSlider)
+
+        self.thresholdValueLabel = QLabel("30")
+        self.thresholdValueLabel.setMinimumWidth(30)
+        sliderLayout.addWidget(self.thresholdValueLabel)
+
+        layout.addWidget(sliderWidget)
+
+        return column
+
+    def on_threshold_changed(self, value):
+        self.peakThreshold = value
+        self.thresholdValueLabel.setText(str(value))
+
+    def update_viewport(self, points, threshold=30):
+        # Clear 3D view
+        for sphere in self.renderedSpheres:
+            self.glView.removeItem(sphere)
+        self.renderedSpheres.clear()
+
+        if points == None:
+            # Clear 2D view
+            self.scatter2D.setData([], [])
+            return
+
+        meshData = gl.MeshData.sphere(rows=10, cols=10, radius=1.0)
+        scaleFactor = 1.0
+
+        # Lists for 2D plotting
+        x_coords = []
+        y_coords = []
+
+        for coord in points:
+            if coord[2] < threshold:
+                continue
+
+            # 3D sphere
+            sphere = gl.GLMeshItem(
+                meshdata=meshData,
+                smooth=True,
+                color=(1, 1, 1, 0.5),
+                shader='balloon',
+                glOptions='additive'
+            )
+            sphere.translate(coord[3] * scaleFactor,
+                            coord[4] * scaleFactor,
+                            coord[5] * scaleFactor)
+            self.glView.addItem(sphere)
+            self.renderedSpheres.append(sphere)
+
+            # Collect coordinates for 2D plot
+            x_coords.append(coord[3] * scaleFactor)
+            y_coords.append(coord[4] * scaleFactor)
+            print(coord[3],coord[4],coord[5])
+
+        # Update 2D scatter plot
+        self.scatter2D.setData(x_coords, y_coords)
+
+    def create_column_commands(self):
+        column = QWidget()
+        column.setObjectName("column-settings")
+        layout = QVBoxLayout(column)
+
+        title = QLabel("Current Configuration:")
+        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(title)
+
+        self.commandsText = QTextEdit()
+        self.commandsText.setReadOnly(True)
+        self.commandsText.setObjectName("commands-display")
+
+        sample_commands = """sensorStop
+flushCfg
+dfeDataOutputMode 1
+channelCfg 15 5 0
+adcCfg 2 1
+adcbufCfg 0 1 0 1
+profileCfg 0 77 66 7 48.98 0 0 30 1 256 6250 0 0 30
+chirpCfg 0 0 0 0 0 0 0 1
+chirpCfg 1 1 0 0 0 0 0 4
+frameCfg 0 1 16 0 200 1 0
+lowPower 0 1
+guiMonitor 1 0 0 0 0 0
+cfarCfg 0 2 8 4 3 0 1280
+peakGrouping 1 1 1 1 229
+multiObjBeamForming 1 0.5
+clutterRemoval 0
+calibDcRangeSig 0 -5 8 256
+compRangeBiasAndRxChanPhase 0.0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0
+measureRangeBiasAndRxChanPhase 0 1.5 0.2
+CQRxSatMonitor 0 3 4 127 0
+CQSigImgMonitor 0 127 4
+analogMonitor 1 1"""
+        
+        self.commandsText.setPlainText(sample_commands)
+        layout.addWidget(self.commandsText)
+        
+        # Save button
+        self.saveButton = QPushButton("Save Configuration")
+        #self.saveButton.clicked.connect(self.save_configuration)
+        layout.addWidget(self.saveButton)
+        
+        # Load button
+        self.loadButton = QPushButton("Load Configuration")
+        #self.loadButton.clicked.connect(self.load_configuration)
+        layout.addWidget(self.loadButton)
+
+        return column
+
+    def apply_styles(self):
+        """Load and apply CSS stylesheet from external file"""
+        try:
+            with open('style.css', 'r') as f:
+                stylesheet = f.read()
+                self.setStyleSheet(stylesheet)
+        except FileNotFoundError:
+            print("Warning: style.css not found. Using default styles.")
+            # Fallback to default styles if file doesn't exist
+            self.setStyleSheet("")
+
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = RadarGUI()
+    window.show()
+    sys.exit(app.exec())
