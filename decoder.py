@@ -19,29 +19,11 @@ class Decoder:
             case _:
                 raise(f"Invalid TLV Type of: {type}")
 
-    def detected_point(self,value):
-        #data = []
-        #for i in range(4, len(value), 4):
-        #    data.append(float(np.frombuffer(value[i:i+4], dtype=np.float32)[0]))
-
-        num_obj = int(np.frombuffer(value[0:2], dtype=np.uint16)[0])
-        q_format = float(np.frombuffer(value[2:4], dtype=np.uint16)[0])
-        data = []
-        for i in range(num_obj):
-            rangeIdx =      int(np.frombuffer(value[12*i    :  12*i + 2],   dtype=np.uint16)[0])
-            dopplerIdx =    int(np.frombuffer(value[12*i + 2:  12*i + 4],   dtype=np.uint16)[0])
-            peakVal =       int(np.frombuffer(value[12*i + 4:  12*i + 6],   dtype=np.uint16)[0])
-            x =             float(np.frombuffer(value[12*i + 6:  12*i + 8],   dtype=np.int16)[0]) / q_format
-            y =             float(np.frombuffer(value[12*i + 8:  12*i + 10],  dtype=np.int16)[0]) / q_format
-            z =             float(np.frombuffer(value[12*i + 10: 12*i + 12],  dtype=np.int16)[0]) / q_format
-            data.append([(rangeIdx,dopplerIdx,peakVal,x,y,z)])
-        return data
-    
     def detected_points(self, value):
         # Read 4-byte header
         num_obj = int(np.frombuffer(value[0:2], dtype=np.uint16)[0])
         q_format_exp = int(np.frombuffer(value[2:4], dtype=np.uint16)[0])
-        q_format = float(2 ** q_format_exp)  # JS does: Math.pow(2, xyzQFormat)
+        q_format = float(2.0 ** q_format_exp)
 
         data = []
         offset = 4  # Start after 4-byte header (numObj + qFormat)
