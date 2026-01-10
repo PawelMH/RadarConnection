@@ -3,6 +3,7 @@ import numpy as np
 
 class Decoder:
     def tlv_decode(self, type, value):
+        #print(type)
         match type:
             case 1:
                 return self.detected_points(value)
@@ -42,7 +43,11 @@ class Decoder:
         return data
 
     def range_profile(self,value):
-        return [random.randint(0,100)]
+        data = []
+        for i in range(int(len(value)/2)):
+            q9 = int(np.frombuffer(value[i*2:i*2 + 2], dtype=np.uint16)[0])
+            data.append(q9)
+        return data
 
     def noise_profile(self,value):
         return [random.randint(0,100)]

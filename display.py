@@ -37,7 +37,7 @@ class RadarGUI(QMainWindow):
         self.apply_styles()
 
         self.fps = 5.0
-        self.radar = Radar("COM5","COM4")
+        self.radar = Radar("COM4","COM5")
 
     def create_column_settings(self):
         column = QWidget()
@@ -86,7 +86,8 @@ class RadarGUI(QMainWindow):
                 totalFrames = newTotalFrames
 
             if currentIdx < totalFrames:
-                print(f"Frame Number: {self.radar.storedData[currentIdx][3]}")
+                #print(f"Frame Number: {self.radar.storedData[currentIdx][3]}")
+                print(f"Frame Number: {self.radar.storedData[currentIdx][8]}")
                 if self.radar.storedData[currentIdx][7] == None:
                     points = None
                 else:
@@ -230,7 +231,7 @@ class RadarGUI(QMainWindow):
             # Collect coordinates for 2D plot
             x_coords.append(coord[3] * scaleFactor)
             y_coords.append(coord[4] * scaleFactor)
-            print(coord[3],coord[4],coord[5])
+            #print(coord[3],coord[4],coord[5])
 
         # Update 2D scatter plot
         self.scatter2D.setData(x_coords, y_coords)
@@ -259,7 +260,7 @@ chirpCfg 0 0 0 0 0 0 0 1
 chirpCfg 1 1 0 0 0 0 0 4
 frameCfg 0 1 16 0 200 1 0
 lowPower 0 1
-guiMonitor 1 0 0 0 0 0
+guiMonitor 1 1 0 0 0 0
 cfarCfg 0 2 8 4 3 0 1280
 peakGrouping 1 1 1 1 229
 multiObjBeamForming 1 0.5
