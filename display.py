@@ -1,10 +1,10 @@
 import sys
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QLabel, QWidget,
                              QHBoxLayout,QVBoxLayout,QTextEdit,QPushButton,
-                             QTabWidget, QSlider)  # Add QTabWidget
+                             QTabWidget, QSlider)
 from PyQt6.QtCore import Qt
 import pyqtgraph.opengl as gl
-import pyqtgraph as pg  # Add this for 2D plotting
+import pyqtgraph as pg
 
 from radar import Radar
 import threading
@@ -118,24 +118,6 @@ class RadarGUI(QMainWindow):
         # Create tab widget
         self.tabWidget = QTabWidget()
         #################################################################################
-        # Create 3D view tab
-        tab3D = QWidget()
-        layout3D = QVBoxLayout(tab3D)
-
-        self.glView = gl.GLViewWidget()
-        self.glView.setMinimumSize(400, 400)
-        self.glView.setCameraPosition(distance=40, elevation=30, azimuth=45)
-
-        grid = gl.GLGridItem()
-        grid.scale(2, 2, 1)
-        self.glView.addItem(grid)
-
-        axis = gl.GLAxisItem()
-        axis.setSize(10, 10, 10)
-        self.glView.addItem(axis)
-
-        layout3D.addWidget(self.glView)
-        #################################################################################
         # Create 2D view tab
         tab2D = QWidget()
         layout2D = QVBoxLayout(tab2D)
@@ -170,11 +152,10 @@ class RadarGUI(QMainWindow):
         self.plotRange.setLabel('bottom', 'Range (M)')
         self.plotRange.setTitle('Range - Gain')
         self.plotRange.showGrid(x=True, y=True)
-        self.plotRange.setAspectLocked(True)  # Keep aspect ratio square
 
-        #self.plotRange.setXRange(-4, 4, padding=0)
-        #self.plotRange.setYRange(-1, 10, padding=0)
-        #self.plotRange.disableAutoRange()  # Disable auto-ranging
+        self.plotRange.setXRange(0,500)
+        self.plotRange.setYRange(0,10000)
+        self.plotRange.disableAutoRange()  # Disable auto-ranging
 
         # Create scatter plot item
         self.scatterRange = pg.ScatterPlotItem(size=10, pen=pg.mkPen(None), brush=pg.mkBrush(255, 255, 255, 200))
@@ -184,7 +165,6 @@ class RadarGUI(QMainWindow):
 
         #################################################################################
         # Add tabs to tab widget
-        self.tabWidget.addTab(tab3D, "3D View")
         self.tabWidget.addTab(tab2D, "2D View (X-Y)")
         self.tabWidget.addTab(tabRange, "Range View")
         
@@ -224,20 +204,14 @@ class RadarGUI(QMainWindow):
         self.scatterRange.setData(range(len(points)),points)
 
     def update_viewport(self, points, threshold=30):
-        # Clear 3D view
-        for sphere in self.renderedSpheres:
-            self.glView.removeItem(sphere)
-        self.renderedSpheres.clear()
-
         if points == None:
-            # Clear 2D view
+            #Clear 2D view
             self.scatter2D.setData([], [])
             return
 
-        meshData = gl.MeshData.sphere(rows=10, cols=10, radius=1.0)
         scaleFactor = 1.0
 
-        # Lists for 2D plotting
+        #Lists for 2D plotting
         x_coords = []
         y_coords = []
 
@@ -245,24 +219,9 @@ class RadarGUI(QMainWindow):
             if coord[2] < threshold:
                 continue
 
-            # 3D sphere
-            sphere = gl.GLMeshItem(
-                meshdata=meshData,
-                smooth=True,
-                color=(1, 1, 1, 0.5),
-                shader='balloon',
-                glOptions='additive'
-            )
-            sphere.translate(coord[3] * scaleFactor,
-                            coord[4] * scaleFactor,
-                            coord[5] * scaleFactor)
-            self.glView.addItem(sphere)
-            self.renderedSpheres.append(sphere)
-
-            # Collect coordinates for 2D plot
+            #Collect coordinates for 2D plot
             x_coords.append(coord[3] * scaleFactor)
             y_coords.append(coord[4] * scaleFactor)
-            #print(coord[3],coord[4],coord[5])
 
         # Update 2D scatter plot
         self.scatter2D.setData(x_coords, y_coords)
