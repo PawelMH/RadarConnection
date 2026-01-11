@@ -86,14 +86,15 @@ class RadarGUI(QMainWindow):
                 totalFrames = newTotalFrames
 
             if currentIdx < totalFrames:
-                #print(f"Frame Number: {self.radar.storedData[currentIdx][3]}")
-                print(f"Frame Number: {self.radar.storedData[currentIdx][8]}")
+                print(f"Frame Number: {self.radar.storedData[currentIdx][3]}")
                 if self.radar.storedData[currentIdx][7] == None:
                     points = None
                 else:
                     points = [sublist[0] for sublist in self.radar.storedData[currentIdx][7]]
                 self.update_viewport(points=points, threshold=self.peakThreshold)
-                
+                self.update_range_view(points=self.radar.storedData[currentIdx][8])
+
+
                 elapsedTime = time.perf_counter() - startTime
                 sleepTime = frameInterval - elapsedTime
                 if sleepTime > 0:
@@ -218,6 +219,9 @@ class RadarGUI(QMainWindow):
     def on_threshold_changed(self, value):
         self.peakThreshold = value
         self.thresholdValueLabel.setText(str(value))
+
+    def update_range_view(self, points):
+        self.scatterRange.setData(range(len(points)),points)
 
     def update_viewport(self, points, threshold=30):
         # Clear 3D view
