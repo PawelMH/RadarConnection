@@ -116,7 +116,7 @@ class RadarGUI(QMainWindow):
 
         # Create tab widget
         self.tabWidget = QTabWidget()
-
+        #################################################################################
         # Create 3D view tab
         tab3D = QWidget()
         layout3D = QVBoxLayout(tab3D)
@@ -134,7 +134,7 @@ class RadarGUI(QMainWindow):
         self.glView.addItem(axis)
 
         layout3D.addWidget(self.glView)
-
+        #################################################################################
         # Create 2D view tab
         tab2D = QWidget()
         layout2D = QVBoxLayout(tab2D)
@@ -157,9 +157,36 @@ class RadarGUI(QMainWindow):
 
         layout2D.addWidget(self.plot2D)
 
+        #################################################################################
+        # Create range viewer tab
+
+        tabRange = QWidget()
+        layoutRange = QVBoxLayout(tabRange)
+
+        self.plotRange = pg.PlotWidget()
+        self.plotRange.setMinimumSize(400, 400)
+        self.plotRange.setLabel('left', 'Gain (dB)')
+        self.plotRange.setLabel('bottom', 'Range (M)')
+        self.plotRange.setTitle('Range - Gain')
+        self.plotRange.showGrid(x=True, y=True)
+        self.plotRange.setAspectLocked(True)  # Keep aspect ratio square
+
+        #self.plotRange.setXRange(-4, 4, padding=0)
+        #self.plotRange.setYRange(-1, 10, padding=0)
+        #self.plotRange.disableAutoRange()  # Disable auto-ranging
+
+        # Create scatter plot item
+        self.scatterRange = pg.ScatterPlotItem(size=10, pen=pg.mkPen(None), brush=pg.mkBrush(255, 255, 255, 200))
+        self.plotRange.addItem(self.scatterRange)
+
+        layoutRange.addWidget(self.plotRange)
+
+        #################################################################################
         # Add tabs to tab widget
         self.tabWidget.addTab(tab3D, "3D View")
         self.tabWidget.addTab(tab2D, "2D View (X-Y)")
+        self.tabWidget.addTab(tabRange, "Range View")
+        
 
         layout.addWidget(self.tabWidget)
 
