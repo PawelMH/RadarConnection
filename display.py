@@ -37,7 +37,7 @@ class RadarGUI(QMainWindow):
         self.apply_styles()
 
         self.fps = 5.0
-        self.radar = Radar("COM7","COM6")
+        self.radar = Radar("COM4","COM5")
 
     def create_column_settings(self):
         column = QWidget()
@@ -69,44 +69,33 @@ class RadarGUI(QMainWindow):
         self.viewportThread.start()
 
     def update_viewport_radar(self):
-        frameInterval = (1.0 / self.fps) * 0.95
-        currentIdx = 0
         denoise = False
+        frameIdx = 0
 
         while (self.radar.active and len(self.radar.storedData) == 0):
             pass
 
-        totalFrames = len(self.radar.storedData)
-
         while self.radar.active:
-            startTime = time.perf_counter()
-            newTotalFrames = len(self.radar.storedData)
+                if len(self.radar.storedData) > frameIdx:
+                    frameIdx =  len(self.radar.storedData)
+                else:
+                    continue
 
-            if newTotalFrames > totalFrames:
-                currentIdx = totalFrames
-                totalFrames = newTotalFrames
-
-            if currentIdx < totalFrames:
-                print(f"Frame Number: {self.radar.storedData[currentIdx][3]}")
-                if self.radar.storedData[currentIdx][7] == None:
+                print(f"Frame Number: {len(self.radar.storedData)}")
+                if self.radar.storedData[-1][7] == None:
                     points = None
                 else:
-                    points = [sublist[0] for sublist in self.radar.storedData[currentIdx][7]]
+                    points = [sublist[0] for sublist in self.radar.storedData[-1][7]]
                 self.update_viewport(points=points, threshold=self.peakThreshold)
 
-                if currentIdx > 50 and denoise == False:
+                if len(self.radar.storedData) > 50 and denoise == False:
                     denoise = True
                     self.calc_noise_profile()
 
-                self.update_range_view(points=self.radar.storedData[currentIdx][8], denoise=denoise)
-
-
-                elapsedTime = time.perf_counter() - startTime
-                sleepTime = frameInterval - elapsedTime
-                if sleepTime > 0:
-                    time.sleep(sleepTime)
+                self.update_range_view(points=self.radar.storedData[-1][8], denoise=denoise)
                 
-                currentIdx += 1
+
+
 
     def stop_radar(self):
         self.radar.active = False
@@ -302,6 +291,7 @@ analogMonitor 1 1"""
         for i in range(len(self.radar.storedData[0][8])):
             temp = 0
             for j in range(40):
+                print(len(self.radar.storedData[j][8]))
                 temp += self.radar.storedData[j][8][i]
             temp /= 40.0
             noiseProfile.append(temp)

@@ -62,23 +62,21 @@ class Radar:
             return -1
 
     def read_data(self):
-        data = self.dataSerial.read(4096)
-        count = 0
+        data = self.dataSerial.read(128)
         magicWord = bytes([2,1,4,3,6,5,8,7])
-        for i in range(len(data) - len(magicWord) + 1):
-            if data[i:i+len(magicWord)] == magicWord:
-                count+=1
-        
         chunks = data.split(magicWord)
 
-        if len(chunks[0]):
-            self.buffer.extend(chunks[0])
-            self.dataChunks.append(self.buffer)
+        self.buffer.extend(chunks[0])
+
+        if len(chunks) > 1:
+            self.dataChunks.append(bytearray(self.buffer))
+            self.buffer = bytearray()
 
         for chunk in chunks[1:-1]:
-            self.dataChunks.append(chunk)
-        
-        self.buffer = bytearray(chunks[-1])
+            self.dataChunks.append(bytearray(chunk))
+
+        if len(chunks) > 1:
+            self.buffer = bytearray(chunks[-1])
 
     def run(self):
         self.start()
@@ -90,6 +88,9 @@ class Radar:
         while self.active:
             self.read_data()
             for chunk in self.dataChunks:
+                if len(chunk) == 0:
+                    continue
+
                 tlvDict = {}
                 chunkData = [ int(np.frombuffer(chunk[0:4], dtype=np.uint32)[0]),    #Version
                               int(np.frombuffer(chunk[4:8], dtype=np.uint32)[0]),    #Total Packet Length
