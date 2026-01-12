@@ -37,7 +37,7 @@ class RadarGUI(QMainWindow):
         self.apply_styles()
 
         self.fps = 5.0
-        self.radar = Radar("COM4","COM5")
+        self.radar = Radar("COM7","COM6")
 
     def create_column_settings(self):
         column = QWidget()
@@ -71,6 +71,7 @@ class RadarGUI(QMainWindow):
     def update_viewport_radar(self):
         frameInterval = (1.0 / self.fps) * 0.95
         currentIdx = 0
+        denoise = False
 
         while (self.radar.active and len(self.radar.storedData) == 0):
             pass
@@ -92,7 +93,12 @@ class RadarGUI(QMainWindow):
                 else:
                     points = [sublist[0] for sublist in self.radar.storedData[currentIdx][7]]
                 self.update_viewport(points=points, threshold=self.peakThreshold)
-                self.update_range_view(points=self.radar.storedData[currentIdx][8])
+
+                if currentIdx > 50 and denoise == False:
+                    denoise = True
+                    self.calc_noise_profile()
+
+                self.update_range_view(points=self.radar.storedData[currentIdx][8], denoise=denoise)
 
 
                 elapsedTime = time.perf_counter() - startTime
@@ -200,8 +206,11 @@ class RadarGUI(QMainWindow):
         self.peakThreshold = value
         self.thresholdValueLabel.setText(str(value))
 
-    def update_range_view(self, points):
-        self.scatterRange.setData(range(len(points)),points)
+    def update_range_view(self, points, denoise = False):
+        if denoise:
+            self.scatterRange.setData(range(len(points)),self.denoise_range(points))
+        else:
+            self.scatterRange.setData(range(len(points)),points)
 
     def update_viewport(self, points, threshold=30):
         if points == None:
@@ -288,6 +297,20 @@ analogMonitor 1 1"""
             # Fallback to default styles if file doesn't exist
             self.setStyleSheet("")
 
+    def calc_noise_profile(self):
+        noiseProfile = []
+        for i in range(len(self.radar.storedData[0][8])):
+            temp = 0
+            for j in range(40):
+                temp += self.radar.storedData[j][8][i]
+            temp /= 40.0
+            noiseProfile.append(temp)
+
+        self.noiseProfile = noiseProfile
+
+    def denoise_range(self, points):
+        #Take average amplitudes and subtract them from the current range.
+        return [points[i] - self.noiseProfile[i] for i in range(len(points))]
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
