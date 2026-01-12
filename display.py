@@ -79,6 +79,7 @@ class RadarGUI(QMainWindow):
                 if len(self.radar.storedData) > frameIdx:
                     frameIdx =  len(self.radar.storedData)
                 else:
+                    time.sleep(0.02)
                     continue
 
                 print(f"Frame Number: {len(self.radar.storedData)}")
@@ -290,7 +291,7 @@ analogMonitor 1 1"""
         noiseProfile = []
         for i in range(len(self.radar.storedData[0][8])):
             temp = 0
-            for j in range(40):
+            for j in range(30):
                 print(len(self.radar.storedData[j][8]))
                 temp += self.radar.storedData[j][8][i]
             temp /= 40.0
