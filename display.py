@@ -56,7 +56,8 @@ class RadarGUI(QMainWindow):
         return column
 
     def upload_commands(self):
-        self.radar.send_cmd_file(cmdFile="testcommands.txt")
+        for cmd in self.commandsText.toPlainText().split('\n'):
+            self.radar.send_cmd(cmd)
         
         self.radar.active = True
         self.radar.storedData = []
@@ -94,9 +95,6 @@ class RadarGUI(QMainWindow):
                     self.calc_noise_profile()
 
                 self.update_range_view(points=self.radar.storedData[-1][8], denoise=denoise)
-                
-
-
 
     def stop_radar(self):
         self.radar.active = False
@@ -292,7 +290,6 @@ analogMonitor 1 1"""
         for i in range(len(self.radar.storedData[0][8])):
             temp = 0
             for j in range(30):
-                print(len(self.radar.storedData[j][8]))
                 temp += self.radar.storedData[j][8][i]
             temp /= 40.0
             noiseProfile.append(temp)
