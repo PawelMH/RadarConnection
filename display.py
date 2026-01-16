@@ -9,6 +9,7 @@ import pyqtgraph as pg
 from radar import Radar
 import threading
 import time
+import pickle
 
 class RadarGUI(QMainWindow):
     def __init__(self):
@@ -103,6 +104,9 @@ class RadarGUI(QMainWindow):
             self.radarThread.join()
         if hasattr(self, 'viewportThread') and self.viewportThread.is_alive():
             self.viewportThread.join()
+
+        #with open('savedData.pkl', 'wb') as f:
+            #pickle.dump(self.radar.storedData, f)
 
     def create_column_viewport(self):
         column = QWidget()
@@ -242,7 +246,7 @@ dfeDataOutputMode 1
 channelCfg 15 5 0
 adcCfg 2 1
 adcbufCfg 0 1 0 1
-profileCfg 0 77 66 7 48.98 0 0 30 1 256 6250 0 0 30
+profileCfg 0 77 372 7 114.29 0 0 35 1 224 2107 0 0 30
 chirpCfg 0 0 0 0 0 0 0 1
 chirpCfg 1 1 0 0 0 0 0 4
 frameCfg 0 1 16 0 200 1 0
@@ -255,8 +259,8 @@ clutterRemoval 0
 calibDcRangeSig 0 -5 8 256
 compRangeBiasAndRxChanPhase 0.0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0
 measureRangeBiasAndRxChanPhase 0 1.5 0.2
-CQRxSatMonitor 0 3 4 127 0
-CQSigImgMonitor 0 127 4
+CQRxSatMonitor 0 3 11 121 0
+CQSigImgMonitor 0 111 4
 analogMonitor 1 1"""
         
         self.commandsText.setPlainText(sample_commands)
