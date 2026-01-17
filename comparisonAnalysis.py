@@ -2,43 +2,91 @@ import pickle
 from matplotlib import pyplot as plt
 from matplotlib import animation
 import numpy as np
+import math
 
-
-
-with open('savedData50cm.pkl', 'rb') as f:
+with open('savedData20cm.pkl', 'rb') as f:
     data = pickle.load(f)
+with open('savedDataNone.pkl', 'rb') as f:
+    noiseData = pickle.load(f)
 
-# Create figure and axis
-fig, ax = plt.subplots()
+print(len(noiseData))
 
-# Initialize the line with first frame data
-line, = ax.plot([], [],color='red')
+noiseProfile = [0 for val in noiseData[0][8]]
+for val in noiseData:
+    for i in range(len(val[8])):
+        noiseProfile[i] += val[8][i]
+noiseProfile = [val/len(noiseData) for val in noiseProfile]
 
-# Set axis limits based on data
-#ax.set_xlim(0, len(data[0][8]))
-#ax.set_ylim(min([min(d[8]) for d in data]), max([max(d[8]) for d in data]))
 
-ax.set_xlim(0, 2.41)
-y_scale = 89.0
-ax.set_ylim(min([min(d[8]) for d in data]) / y_scale, max([max(d[8]) for d in data]) / y_scale)
+dataDenoised = [[data[i][8][j] - noiseProfile[j] for j in range(len(data[i][8]))] for i in range(len(data))]
+x = np.linspace(0, 2.41, len(data[i][8]))
+#plt.plot(x, noiseProfile)
+plt.plot(x, data[0][8])
+plt.plot(x, dataDenoised[0])
+plt.show()
+
+
+
+exit()
+
+# Create figure with 4 subplots (2x2 grid)
+fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(12, 10))
+
+# Initialize lines for each subplot
+line1, = ax1.plot([], [], color='red', label='Original')
+line2, = ax2.plot([], [], color='blue', label='Linear Scale')
+line3, = ax3.plot([], [], color='green', label='Log Scale')
+line4_orig, = ax4.plot([], [], color='red', label='Original')
+line4_lin, = ax4.plot([], [], color='blue', label='Linear Scale')
+line4_log, = ax4.plot([], [], color='green', label='Log Scale')
+
+# Set titles
+ax1.set_title('Original')
+ax2.set_title('Linear Scale')
+ax3.set_title('Log Scale')
+ax4.set_title('All Lines Combined')
+
+# Set axis limits for all subplots
+for ax in [ax1, ax2, ax3, ax4]:
+    ax.set_xlim(0, 2.41)
+    ax.set_ylim(min([min(d[8]) for d in data]) / y_scale, max([max(d[8]) for d in data]))
 
 # Initialization function
 def init():
-    line.set_data([], [])
-    return line,
+    line1.set_data([], [])
+    line2.set_data([], [])
+    line3.set_data([], [])
+    line4_orig.set_data([], [])
+    line4_lin.set_data([], [])
+    line4_log.set_data([], [])
+    return line1, line2, line3, line4_orig, line4_lin, line4_log
 
 # Animation function (i is the frame number)
 def animate(i):
-    #x = range(len(data[i][8]))
-    #y = data[i][8]
     x = np.linspace(0, 2.41, len(data[i][8]))
-    y = [val / y_scale for val in data[i][8]]
-    line.set_data(x, y)
-    ax.set_title(f'Frame {i}')
-    return line,
+    linScale = [(32.0/float(len(x))) * (2**(val/512.0)) for val in data[i][8]]
+    logScale = [(val*20.0*math.log10(2.0))/512.0 + 20.0*math.log10(32.0/float(len(x))) for val in data[i][8]]
+    y = [val for val in data[i][8]]
+    
+    # Update individual subplot lines
+    line1.set_data(x, y)
+    line2.set_data(x, linScale)
+    line3.set_data(x, logScale)
+    
+    # Update combined subplot lines
+    line4_orig.set_data(x, y)
+    line4_lin.set_data(x, linScale)
+    line4_log.set_data(x, logScale)
+    
+    # Update frame counter on the main figure
+    fig.suptitle(f'Frame {i}')
+    
+    return line1, line2, line3, line4_orig, line4_lin, line4_log
+
+# Adjust layout to prevent overlap
+plt.tight_layout()
 
 # Create animation
 anim = animation.FuncAnimation(fig, animate, init_func=init,
                               frames=len(data), interval=100, blit=True)
-
 plt.show()
