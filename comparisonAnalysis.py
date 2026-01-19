@@ -4,7 +4,7 @@ from matplotlib import animation
 import numpy as np
 import math
 
-with open('savedData50cm.pkl', 'rb') as f:
+with open('savedData20cm.pkl', 'rb') as f:
     data = pickle.load(f)
 
 with open('savedDataNone.pkl', 'rb') as f:

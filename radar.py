@@ -135,7 +135,7 @@ def serial_init(port, baudrate):
 
 def main():
 
-    radar = Radar(configPort="COM5", dataPort="COM4")
+    radar = Radar(configPort="COM", dataPort="COM4")
     radar.send_cmd_file(cmdFile="commands.txt")
     radar.run()
 
