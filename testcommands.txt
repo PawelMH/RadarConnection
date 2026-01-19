@@ -57,7 +57,6 @@ CQSigImgMonitor 0 95 4
 #Range Resolution Decreased
 
 profileCfg 0 77 372 7 114.29 0 0 35 1 224 2107 0 0 30
-cfarCfg 0 2 8 4 3 0 1280
 peakGrouping 1 1 1 1 229
 CQRxSatMonitor 0 3 11 121 0
 CQSigImgMonitor 0 111 4
@@ -107,3 +106,34 @@ digOutSampleRate = Input.ADC_Sampling_Rate * 1000;
 hpfCornerFreq1 = 0;
 hpfCornerFreq2 = 0;
 rxGain = 30;
+
+
+
+
+peakGrouping:
+1 1 1 1
+peakGrouping.endRangeIdx = Math.floor(0.9 * Input.Range_FFT_size) - 1;
+
+CQRxSatMonitor:
+profile = 0
+profilesatMonSel = 3
+priSliceDuration = 
+    samplingTime = Input.Num_ADC_Samples / Input.ADC_Sampling_Rate;
+    primarySliceDuration = Math.ceil(samplingTime / 0.16 / 64);
+    if (primarySliceDuration < 4) {
+        primarySliceDuration = 4;
+    }
+    
+    numPrimarySlices = Math.ceil(samplingTime / (0.16 * primarySliceDuration));
+    while (numPrimarySlices > 64) {
+        primarySliceDuration = primarySliceDuration + 1;
+        numPrimarySlices = Math.ceil(samplingTime / (0.16 * primarySliceDuration));
+    }
+numSlices = numPrimarySlices * 2 - 1
+rxChanMask = 0
+
+
+CQSigImgMonitor:
+profile = 0
+numSlices = (numAdcSamples / 2) - 1
+numSamplePerSlice = 4
