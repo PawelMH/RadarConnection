@@ -4,12 +4,13 @@ from matplotlib import animation
 import numpy as np
 import math
 
-with open('savedData20cm.pkl', 'rb') as f:
+with open('savedDataTest.pkl', 'rb') as f:
     data = pickle.load(f)
 with open('savedDataNone.pkl', 'rb') as f:
     noiseData = pickle.load(f)
 
-print(len(noiseData))
+print(len(data[0][8]))
+exit()
 
 noiseProfile = [0 for val in noiseData[0][8]]
 for val in noiseData:

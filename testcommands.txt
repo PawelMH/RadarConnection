@@ -21,73 +21,89 @@ CQRxSatMonitor 0 3 4 99 0
 CQSigImgMonitor 0 31 4
 analogMonitor 1 1
 
-#Resolution Changed
+
+#Default
+
+flushCfg
+dfeDataOutputMode 1
 channelCfg 15 5 0
 adcCfg 2 1
 adcbufCfg 0 1 0 1
+profileCfg 0 77 447 7 40 0 0 100 1 64 2000 0 0 30
+chirpCfg 0 0 0 0 0 0 0 1
+chirpCfg 1 1 0 0 0 0 0 4
+frameCfg 0 1 16 0 200 1 0
+lowPower 0 1
+guiMonitor 1 1 0 0 0 0
+cfarCfg 0 2 8 4 3 0 1280
+peakGrouping 1 1 1 1 56
+multiObjBeamForming 1 0.5
+clutterRemoval 0
+calibDcRangeSig 0 -5 8 256
+compRangeBiasAndRxChanPhase 0.0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0
+measureRangeBiasAndRxChanPhase 0 1.5 0.2
+CQRxSatMonitor 0 3 4 99 0
+CQSigImgMonitor 0 31 4
+analogMonitor 1 1
+sensorStart
+
+#Unambiguous Range Increased
+
+profileCfg 0 77 447 7 40 0 0 100 1 192 6000 0 0 30
+peakGrouping 1 1 1 1 229
+CQSigImgMonitor 0 95 4
+
+
+#Range Resolution Decreased
+
 profileCfg 0 77 372 7 114.29 0 0 35 1 224 2107 0 0 30
-chirpCfg 0 0 0 0 0 0 0 1
-chirpCfg 1 1 0 0 0 0 0 4
-frameCfg 0 1 16 0 200 1 0
-lowPower 0 1
-guiMonitor 1 1 0 0 0 0
-cfarCfg 0 2 8 4 3 0 1280
-peakGrouping 1 1 1 1 229                                                            #IS DIFFERENT!!!!!
-multiObjBeamForming 1 0.5
-clutterRemoval 0
-calibDcRangeSig 0 -5 8 256
-compRangeBiasAndRxChanPhase 0.0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0
-measureRangeBiasAndRxChanPhase 0 1.5 0.2
-CQRxSatMonitor 0 3 11 121 0                                                         #IS DIFFERENT!!!!!
-CQSigImgMonitor 0 111 4                                                             #IS DIFFERENT!!!!!
-
-#Max Range Changed
-channelCfg 15 5 0
-adcCfg 2 1
-adcbufCfg 0 1 0 1
-profileCfg 0 77 372 7 114.29 0 0 35 1 240 2257 0 0 30                               #IS DIFFERENT!!!!!
-chirpCfg 0 0 0 0 0 0 0 1
-chirpCfg 1 1 0 0 0 0 0 4
-frameCfg 0 1 16 0 200 1 0
-lowPower 0 1
-guiMonitor 1 1 0 0 0 0
 cfarCfg 0 2 8 4 3 0 1280
 peakGrouping 1 1 1 1 229
-multiObjBeamForming 1 0.5
-clutterRemoval 0
-calibDcRangeSig 0 -5 8 256
-compRangeBiasAndRxChanPhase 0.0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0
-measureRangeBiasAndRxChanPhase 0 1.5 0.2
-CQRxSatMonitor 0 3 11 121 0
-CQSigImgMonitor 0 119 4                                                             #IS DIFFERENT!!!!!
-
-#Max radial Vel Change
-channelCfg 15 5 0
-adcCfg 2 1
-adcbufCfg 0 1 0 1
-profileCfg 0 77 7 7 114.29 0 0 35 1 224 2107 0 0 30                                 #IS DIFFERENT!!!!!
-chirpCfg 0 0 0 0 0 0 0 1
-chirpCfg 1 1 0 0 0 0 0 4
-frameCfg 0 1 16 0 200 1 0
-lowPower 0 1
-guiMonitor 1 1 0 0 0 0
-cfarCfg 0 2 8 4 3 0 1280
-peakGrouping 1 1 1 1 229
-multiObjBeamForming 1 0.5
-clutterRemoval 0
-calibDcRangeSig 0 -5 8 256
-compRangeBiasAndRxChanPhase 0.0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0
-measureRangeBiasAndRxChanPhase 0 1.5 0.2
 CQRxSatMonitor 0 3 11 121 0
 CQSigImgMonitor 0 111 4
 
 
 
-1811
-log2linscale = 1/512
+profileCfg Id StartFreq idleTime adcStartTime rampEndTime txOutPower txPhaserShifter freqSlopeConst txStartTime numAdcSamples digOutSampleRate hpfCornerFreq1 hpfCornerFreq2 rxGain
+profileCfg 0  77        447      7            40          0          0               100            1           64            2000             0              0              30
+profileCfg 0  77        447      7            40          0          0               100            1           192           6000             0              0              30
+profileCfg 0  77        372      7            114.29      0          0               35             1           224           2107             0              0              30
 
-216
-lin = 1 * (32/numRangeBins)
-32,
+Id = 0
+StartFreq = 77
+idleTime:
 
-log = 0 + 20 * log(32/numRangeBins)
+    Input.min_Ramp_Slope = 35
+    if (!Input.Ramp_Slope) Input.Ramp_Slope = Input.min_Ramp_Slope
+
+
+    Input.Bandwidth = 4;
+    Input.Total_BW = Input.Bandwidth * 1000;
+
+    Input.Chirp_duration = MyUtil.toPrecision(Input.Total_BW / Input.Ramp_Slope, 2);//RR,VR
+
+    Input.lightSpeed = 300
+    Input.Frequency_band = 77
+    Input.Maximum_radial_velocity = is a variable
+    Input.Number_of_TX = 4
+
+    idleTime = Input.Inter_chirp_duration = Math.floor((Input.lightSpeed * 1000) / (4 * Input.Frequency_band * Input.Maximum_radial_velocity * Input.Number_of_TX) - Input.Chirp_duration);
+
+adcStartTime = Input.Chirp_Start_Time = 7
+rampEndTime = Input.Chirp_duration;
+txOutPower = 0;
+txPhaseShifter = 0;
+freqSlopeConst = Input.Ramp_Slope;
+txStartTime = 1;
+numAdcSamples = Input.Num_ADC_Samples;
+    value between 64 and 256
+    Range Resolution between 0.04 and 0.047 (scaled 256-64)
+    Input.Maximum_range = 0.8 * Input.Range_Resolution * Input.Num_ADC_Samples;
+
+    Input.Num_ADC_Samples = 16 * Math.floor(Input.Maximum_range / (0.8 * Input.Range_Resolution * 16));
+digOutSampleRate = Input.ADC_Sampling_Rate * 1000;
+    Input.Sweep_BW = MyUtil.toPrecision(Input.lightSpeed / (2 * Input.Range_Resolution), 3); // Range Sheet
+    Input.ADC_Sampling_Rate = MyUtil.toFloor(Input.Ramp_Slope * Input.Num_ADC_Samples / Input.Sweep_BW, 3); //RR,VR
+hpfCornerFreq1 = 0;
+hpfCornerFreq2 = 0;
+rxGain = 30;

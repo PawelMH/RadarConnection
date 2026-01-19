@@ -105,8 +105,8 @@ class RadarGUI(QMainWindow):
         if hasattr(self, 'viewportThread') and self.viewportThread.is_alive():
             self.viewportThread.join()
 
-        #with open('savedData.pkl', 'wb') as f:
-            #pickle.dump(self.radar.storedData, f)
+        with open('savedDataTest.pkl', 'wb') as f:
+            pickle.dump(self.radar.storedData, f)
 
     def create_column_viewport(self):
         column = QWidget()
@@ -199,6 +199,7 @@ class RadarGUI(QMainWindow):
         self.thresholdValueLabel.setText(str(value))
 
     def update_range_view(self, points, denoise = False):
+        print(len(points))
         if denoise:
             self.scatterRange.setData(range(len(points)),self.denoise_range(points))
         else:
@@ -245,9 +246,7 @@ flushCfg
 dfeDataOutputMode 1
 channelCfg 15 5 0
 adcCfg 2 1
-adcbufCfg 0 1 0 1
-profileCfg 0 77 372 7 114.29 0 0 35 1 224 2107 0 0 30
-chirpCfg 0 0 0 0 0 0 0 1
+adcbufCfg 0 1 0 1""" + """\nprofileCfg 0 77 372 7 114.29 0 0 35 1 255 2107 0 0 30""" + """\nchirpCfg 0 0 0 0 0 0 0 1
 chirpCfg 1 1 0 0 0 0 0 4
 frameCfg 0 1 16 0 200 1 0
 lowPower 0 1
