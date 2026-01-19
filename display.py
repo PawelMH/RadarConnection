@@ -45,7 +45,20 @@ class RadarGUI(QMainWindow):
         column.setObjectName("column-settings")
         layout = QVBoxLayout(column)
         
-        
+        rangeLabel = QLabel("Range Resolution (m):")
+        layout.addWidget(rangeLabel)
+
+        self.rangeSlider = QSlider(Qt.Orientation.Horizontal)
+        self.rangeSlider.setMinimum(0)
+        self.rangeSlider.setMaximum(7)
+        self.rangeSlider.setValue(0)
+        self.rangeSlider.valueChanged.connect(self.on_range_resolution_changed)
+        layout.addWidget(self.rangeSlider)
+    
+        self.rangeValueLabel = QLabel("0.04")
+        layout.addWidget(self.rangeValueLabel)
+
+
         uploadButton = QPushButton("Upload Configuration")
         uploadButton.clicked.connect(self.upload_commands)
         layout.addWidget(uploadButton)
@@ -55,6 +68,12 @@ class RadarGUI(QMainWindow):
         layout.addWidget(stopButton)
 
         return column
+    
+    def on_range_resolution_changed(self, value):
+        self.rangeResolution = round(0.04 + value*0.001,3)
+        self.numAdcSamples = 0
+        self.maximumRange = self.rangeResolution * 0.8
+        self.rangeValueLabel.setText(str(self.rangeResolution))
 
     def upload_commands(self):
         for cmd in self.commandsText.toPlainText().split('\n'):
