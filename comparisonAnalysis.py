@@ -4,21 +4,21 @@ from matplotlib import animation
 import numpy as np
 import math
 
-with open('savedData20cm.pkl', 'rb') as f:
+with open('recording_01.pkl', 'rb') as f:
     data = pickle.load(f)
 
 with open('savedDataNone.pkl', 'rb') as f:
     noiseData = pickle.load(f)
 
 data = [val[8] for val in data]
-#Attempt at denoising
-noiseProfile = [0 for val in noiseData[0][8]]
-for val in noiseData:
-    for i in range(len(val[8])):
-        noiseProfile[i] += val[8][i]
-noiseProfile = [val/len(noiseData) for val in noiseProfile]
-
-dataDenoised = [[data[i][j] - noiseProfile[j] for j in range(len(data[i]))] for i in range(len(data))]
+##Attempt at denoising
+#noiseProfile = [0 for val in noiseData[0][8]]
+#for val in noiseData:
+#    for i in range(len(val[8])):
+#        noiseProfile[i] += val[8][i]
+#noiseProfile = [val/len(noiseData) for val in noiseProfile]
+#
+#dataDenoised = [[data[i][j] - noiseProfile[j] for j in range(len(data[i]))] for i in range(len(data))]
 
 
 dataLinScale = []

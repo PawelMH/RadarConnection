@@ -1,7 +1,7 @@
 import sys
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QLabel, QWidget,
                              QHBoxLayout,QVBoxLayout,QTextEdit,QPushButton,
-                             QTabWidget, QSlider)
+                             QTabWidget, QSlider, QLineEdit)
 from PyQt6.QtCore import Qt
 import pyqtgraph.opengl as gl
 import pyqtgraph as pg
@@ -10,6 +10,7 @@ from radar import Radar
 import threading
 import time
 import pickle
+import numpy as np
 
 class RadarGUI(QMainWindow):
     def __init__(self):
@@ -38,26 +39,12 @@ class RadarGUI(QMainWindow):
         self.apply_styles()
 
         self.fps = 5.0
-        self.radar = Radar("COM7","COM6")
+        self.radar = Radar("COM4","COM5")
 
     def create_column_settings(self):
         column = QWidget()
         column.setObjectName("column-settings")
         layout = QVBoxLayout(column)
-        
-        rangeLabel = QLabel("Range Resolution (m):")
-        layout.addWidget(rangeLabel)
-
-        self.rangeSlider = QSlider(Qt.Orientation.Horizontal)
-        self.rangeSlider.setMinimum(0)
-        self.rangeSlider.setMaximum(7)
-        self.rangeSlider.setValue(0)
-        self.rangeSlider.valueChanged.connect(self.on_range_resolution_changed)
-        layout.addWidget(self.rangeSlider)
-    
-        self.rangeValueLabel = QLabel("0.04")
-        layout.addWidget(self.rangeValueLabel)
-
 
         uploadButton = QPushButton("Upload Configuration")
         uploadButton.clicked.connect(self.upload_commands)
@@ -67,13 +54,49 @@ class RadarGUI(QMainWindow):
         stopButton.clicked.connect(self.stop_radar)
         layout.addWidget(stopButton)
 
+        recordLayout = QHBoxLayout()
+
+        self.recordFilenameEdit = QLineEdit()
+        self.recordFilenameEdit.setPlaceholderText("filename")
+        self.recordFilenameEdit.setText("recording_01")
+
+        self.recordButton = QPushButton("Record Data")
+        self.recordButton.setCheckable(True)
+        self.recordButton.clicked.connect(self.toggle_record)
+
+        recordLayout.addWidget(self.recordButton)
+        recordLayout.addWidget(self.recordFilenameEdit)
+
+        layout.addLayout(recordLayout)
+
+
         return column
     
-    def on_range_resolution_changed(self, value):
-        self.rangeResolution = round(0.04 + value*0.001,3)
-        self.numAdcSamples = 0
-        self.maximumRange = self.rangeResolution * 0.8
-        self.rangeValueLabel.setText(str(self.rangeResolution))
+    def toggle_record(self, checked):
+
+        if checked:
+            filename = self.recordFilenameEdit.text().strip()
+
+            if not filename:
+                print("Please enter a filename")
+                self.recordButton.setChecked(False)
+                return
+            self.filename = filename
+
+            self.recordButton.setText("Stop Recording")
+
+            if len(self.radar.storedData):
+                self.recordStart = len(self.radar.storedData) - 1
+            else:
+                self.recordStart = 0
+
+        else:
+            self.recordButton.setText("Record Data")
+            
+            with open(f"{self.filename}.pkl", 'wb') as f:
+                pickle.dump(self.radar.storedData[self.recordStart:len(self.radar.storedData)], f)
+
+
 
     def upload_commands(self):
         for cmd in self.commandsText.toPlainText().split('\n'):
@@ -90,6 +113,7 @@ class RadarGUI(QMainWindow):
         self.viewportThread.start()
 
     def update_viewport_radar(self):
+        
         denoise = False
         frameIdx = 0
 
@@ -102,7 +126,6 @@ class RadarGUI(QMainWindow):
                 else:
                     time.sleep(0.02)
                     continue
-
                 print(f"Frame Number: {len(self.radar.storedData)}")
                 if self.radar.storedData[-1][7] == None:
                     points = None
@@ -111,7 +134,7 @@ class RadarGUI(QMainWindow):
                 self.update_viewport(points=points, threshold=self.peakThreshold)
 
                 if len(self.radar.storedData) > 50 and denoise == False:
-                    denoise = True
+                    denoise = False
                     self.calc_noise_profile()
 
                 self.update_range_view(points=self.radar.storedData[-1][8], denoise=denoise)
@@ -124,8 +147,7 @@ class RadarGUI(QMainWindow):
         if hasattr(self, 'viewportThread') and self.viewportThread.is_alive():
             self.viewportThread.join()
 
-        with open('savedDataTest.pkl', 'wb') as f:
-            pickle.dump(self.radar.storedData, f)
+
 
     def create_column_viewport(self):
         column = QWidget()
@@ -170,7 +192,7 @@ class RadarGUI(QMainWindow):
         self.plotRange.setTitle('Range - Gain')
         self.plotRange.showGrid(x=True, y=True)
 
-        self.plotRange.setXRange(0,500)
+        self.plotRange.setXRange(0,2.41)
         self.plotRange.setYRange(0,10000)
         self.plotRange.disableAutoRange()  # Disable auto-ranging
 
@@ -182,8 +204,8 @@ class RadarGUI(QMainWindow):
 
         #################################################################################
         # Add tabs to tab widget
-        self.tabWidget.addTab(tab2D, "2D View (X-Y)")
         self.tabWidget.addTab(tabRange, "Range View")
+        self.tabWidget.addTab(tab2D, "2D View (X-Y)")
         
 
         layout.addWidget(self.tabWidget)
@@ -218,11 +240,11 @@ class RadarGUI(QMainWindow):
         self.thresholdValueLabel.setText(str(value))
 
     def update_range_view(self, points, denoise = False):
-        print(len(points))
+        x = np.linspace(0, 2.41, len(points))
         if denoise:
-            self.scatterRange.setData(range(len(points)),self.denoise_range(points))
+            self.scatterRange.setData(x,self.denoise_range(points))
         else:
-            self.scatterRange.setData(range(len(points)),points)
+            self.scatterRange.setData(x,points)
 
     def update_viewport(self, points, threshold=30):
         if points == None:
@@ -265,20 +287,22 @@ flushCfg
 dfeDataOutputMode 1
 channelCfg 15 5 0
 adcCfg 2 1
-adcbufCfg 0 1 0 1""" + """\nprofileCfg 0 77 372 7 114.29 0 0 35 1 255 2107 0 0 30""" + """\nchirpCfg 0 0 0 0 0 0 0 1
+adcbufCfg 0 1 0 1
+profileCfg 0 77 447 7 40 0 0 100 1 64 2000 0 0 30
+chirpCfg 0 0 0 0 0 0 0 1
 chirpCfg 1 1 0 0 0 0 0 4
 frameCfg 0 1 16 0 200 1 0
 lowPower 0 1
 guiMonitor 1 1 0 0 0 0
 cfarCfg 0 2 8 4 3 0 1280
-peakGrouping 1 1 1 1 229
+peakGrouping 1 1 1 1 56
 multiObjBeamForming 1 0.5
 clutterRemoval 0
 calibDcRangeSig 0 -5 8 256
 compRangeBiasAndRxChanPhase 0.0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0
 measureRangeBiasAndRxChanPhase 0 1.5 0.2
-CQRxSatMonitor 0 3 11 121 0
-CQSigImgMonitor 0 111 4
+CQRxSatMonitor 0 3 4 99 0
+CQSigImgMonitor 0 31 4
 analogMonitor 1 1"""
         
         self.commandsText.setPlainText(sample_commands)
