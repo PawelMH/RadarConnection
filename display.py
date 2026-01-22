@@ -39,7 +39,7 @@ class RadarGUI(QMainWindow):
         self.apply_styles()
 
         self.fps = 5.0
-        self.radar = Radar("COM4","COM5")
+        self.radar = Radar("COM7","COM6")
 
     def create_column_settings(self):
         column = QWidget()

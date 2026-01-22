@@ -1,10 +1,11 @@
 import pickle
 from matplotlib import pyplot as plt
 from matplotlib import animation
+from matplotlib.ticker import MultipleLocator
 import numpy as np
 import math
 
-with open('recording_01.pkl', 'rb') as f:
+with open('Data/Air_241_110.pkl', 'rb') as f:
     data = pickle.load(f)
 
 with open('savedDataNone.pkl', 'rb') as f:
@@ -58,6 +59,12 @@ ax1.set_ylim(dataMin, dataMax)
 ax2.set_ylim(dataLinMin, dataLinMax)
 ax3.set_ylim(dataLogMin, dataLogMax)
 ax4.set_ylim(min([dataMin,dataLogMin,dataLinMin]), max([dataMax,dataLogMax,dataLinMax]))
+
+for ax in [ax1, ax2, ax3, ax4]:
+    ax.xaxis.set_major_locator(MultipleLocator(0.5))
+    ax.xaxis.set_minor_locator(MultipleLocator(0.1))
+    ax.grid(True, which='major', axis='x', linewidth=1)
+    ax.grid(True, which='minor', axis='x', linestyle=':', alpha=0.4)
 
 # Initialization function
 def init():
