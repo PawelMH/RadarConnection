@@ -5,7 +5,7 @@ from matplotlib.ticker import MultipleLocator
 import numpy as np
 import math
 
-with open('Data/Air_241_110.pkl', 'rb') as f:
+with open('Pipe_241_0/100.pkl', 'rb') as f:
     data = pickle.load(f)
 
 with open('savedDataNone.pkl', 'rb') as f:
