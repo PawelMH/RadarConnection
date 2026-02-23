@@ -18,7 +18,8 @@ class Decoder:
             case 6:
                 return self.statistics(value)
             case _:
-                raise(f"Invalid TLV Type of: {type}")
+                pass
+                #raise(f"Invalid TLV Type of: {type}")
 
     def detected_points(self, value):
         # Read 4-byte header
