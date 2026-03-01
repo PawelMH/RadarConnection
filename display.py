@@ -192,7 +192,7 @@ class RadarGUI(QMainWindow):
         self.plotRange.setTitle('Range - Gain')
         self.plotRange.showGrid(x=True, y=True)
 
-        self.plotRange.setXRange(0,3.01)
+        self.plotRange.setXRange(0,9.29)
         self.plotRange.setYRange(0,10000)
         self.plotRange.disableAutoRange()  # Disable auto-ranging
 
@@ -240,7 +240,7 @@ class RadarGUI(QMainWindow):
         self.thresholdValueLabel.setText(str(value))
 
     def update_range_view(self, points, denoise = False):
-        x = np.linspace(0, 3.01, len(points))
+        x = np.linspace(0, 9.29, len(points))
         if denoise:
             self.scatterRange.setData(x,self.denoise_range(points))
         else:
@@ -288,21 +288,21 @@ dfeDataOutputMode 1
 channelCfg 15 5 0
 adcCfg 2 1
 adcbufCfg 0 1 0 1
-profileCfg 0 77 447 7 40 0 0 100 1 64 2000 0 0 30
+profileCfg 0 77 372 7 114.29 0 0 35 1 224 2107 0 0 30
 chirpCfg 0 0 0 0 0 0 0 1
 chirpCfg 1 1 0 0 0 0 0 4
-frameCfg 0 1 16 0 200 1 0
+frameCfg 0 1 16 0 100 1 0
 lowPower 0 1
 guiMonitor 1 1 0 0 0 0
 cfarCfg 0 2 8 4 3 0 1280
-peakGrouping 1 1 1 1 56
+peakGrouping 1 1 1 1 229
 multiObjBeamForming 1 0.5
 clutterRemoval 0
 calibDcRangeSig 0 -5 8 256
 compRangeBiasAndRxChanPhase 0.0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0
 measureRangeBiasAndRxChanPhase 0 1.5 0.2
-CQRxSatMonitor 0 3 4 99 0
-CQSigImgMonitor 0 31 4
+CQRxSatMonitor 0 3 11 121 0
+CQSigImgMonitor 0 111 4
 analogMonitor 1 1"""
         
         self.commandsText.setPlainText(sample_commands)
