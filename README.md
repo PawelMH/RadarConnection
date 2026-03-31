@@ -14,3 +14,16 @@ This is a python file to plot multiple datasets on the same graph
 - Range resolution depends on max unambiguous range:
   - 717 → 35.2 mm
   - 241 → 46.875 mm
+## Data format
+Each pickle file contains an array of frames, the frames are structured like this:
+- Version
+- Total Packet Length
+- Platform
+- Frame Number
+- Time in CPU Cycles
+- Number of Detected Objects
+- Number of TLVs
+- Detected Objects
+- Range profile
+
+The range profile is the only relevant value, which is an array of the signal strengths
