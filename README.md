@@ -10,7 +10,11 @@ This is a python file to plot multiple datasets on the same graph
 
 ## Datasets
 The datasets are stored inside the "Data" folder with each subfolder containing each individual measurement
+
 The filenames follow this structure: {Measurement Environment}_{Measurement Target}\_{Max unambiguous range}
+
 The range resolution is dependent of the maximum ambiguous range which translates to:
+
 717 = 35.2mm
+
 241 = 46.875mm
